@@ -4,80 +4,161 @@ import BoundingBox from '~/interfaces/BoundingBox';
 import FaceDetails from '~/interfaces/FaceDetails';
 import IndexFaceDetails from '~/interfaces/IndexFaceDetails';
 /**
- * Rekognition Client.
+ * A simplified client for Amazon Rekognition that provides face detection, comparison,
+ * and collection management operations.
+ *
+ * @example
+ * ```typescript
+ * import {RekognitionClient} from 'aws-sdk-extension';
+ *
+ * const client = new RekognitionClient({
+ *   accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
+ *   secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+ *   region: 'ap-northeast-1',
+ * });
+ *
+ * // Detect faces in an uploaded profile photo.
+ * const faces = await client.detectFaces('uploads/profile.jpg');
+ * ```
  */
-export default class {
+export default class RekognitionClient {
     #private;
     /**
-     * Constructs a rekognition client object.
+     * Creates a new RekognitionClient instance.
+     *
+     * @param {RekognitionOptions} options Configuration options including AWS credentials, region, and timeout.
+     *
+     * @example
+     * ```typescript
+     * const client = new RekognitionClient({
+     *   accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
+     *   secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+     *   region: 'ap-northeast-1',
+     *   timeout: 10000,
+     * });
+     * ```
      */
     constructor(options: RekognitionOptions);
     /**
-     * Detects faces within an image that is provided as input.
-     * For each face detected, the operation returns a bounding box of the face.
-     * @param {string} img Image path or Data Url or image buffer.
-     * @param {number} minConfidence The minimum confidence of the detected face. Faces with a confidence lower than this value will not be returned as a result.
-     * @param {boolean} withDetails If false, returns only the face bounding box.When true, returns the age group, gender, and emotion in addition to the face bounding box.
-     * @return {Promise<BoundingBox[]|FaceDetails[]>}
+     * Detects faces within an image and returns their bounding boxes.
+     * When `withDetails` is `true`, also returns age range, gender, and emotion data for each face.
+     *
+     * @param {string} img Image file path or Data URL (`data:image/...;base64,...`).
+     * @param {number} [minConfidence=90] Minimum confidence threshold (0-100). Faces below this confidence are excluded.
+     * @param {boolean} [withDetails=false] When `true`, returns {@link FaceDetails} with age, gender, and emotions. When `false`, returns only {@link BoundingBox}.
+     * @return {Promise<BoundingBox[] | FaceDetails[]>} An array of detected face data. Empty array if no faces are found.
+     *
+     * @example
+     * ```typescript
+     * // Detect face positions only.
+     * const boxes = await client.detectFaces('uploads/profile.jpg');
+     *
+     * // Detect faces with age, gender, and emotions.
+     * const details = await client.detectFaces('uploads/profile.jpg', 80, true);
+     * ```
      */
     detectFaces(img: string, minConfidence?: number, withDetails?: boolean): Promise<BoundingBox[] | FaceDetails[]>;
     /**
-     * Compare the similarity of two faces.
-     * @param {string} img1 Image path or Data Url or image buffer.
-     * @param {string} img2 Image path or Data Url or image buffer.
-     * @return {Promise<number>} Level of confidence that the faces match.
+     * Compares two face images and returns a similarity score.
+     * The similarity is rounded to one decimal place.
+     *
+     * @param {string} img1 Source image: file path or Data URL.
+     * @param {string} img2 Target image: file path or Data URL.
+     * @return {Promise<number>} Similarity score (0-100) rounded to one decimal place. Returns `0` if no match is found.
+     *
+     * @example
+     * ```typescript
+     * // Verify identity by comparing an ID photo with a selfie.
+     * const similarity = await client.compareFaces('uploads/id-photo.jpg', 'uploads/selfie.jpg');
+     * if (similarity >= 90)
+     *   console.log('Identity verified');
+     * ```
      */
     compareFaces(img1: string, img2: string): Promise<number>;
     /**
-     * Add faces to the collection using the IndexFaces operation.
-     * For example, you might create collections, one for each of your application users.
-     * A user can then index faces using the IndexFaces operation and persist results in a specific collection.
-     * Then, a user can search the collection for faces in the user-specific container.
-     * Note that Collection names are case-sensitive.
-     * @param {string} collectionId ID for the collection that you are creating. The maximum length is 255, and the characters that can be used are "[a-zA-Z0-9_.\-]+".
+     * Creates a new face collection with the specified ID.
+     * Collections are used to store face metadata for search operations.
+     * Collection names are case-sensitive.
+     *
+     * @param {string} collectionId Unique identifier for the collection. Maximum length is 255 characters. Allowed characters: `[a-zA-Z0-9_.\-]+`.
+     * @throws {RekognitionCollectionCreateException} Thrown when the API returns a non-200 HTTP status code.
+     *
+     * @example
+     * ```typescript
+     * await client.createCollection('employees');
+     * ```
      */
     createCollection(collectionId: string): Promise<void>;
     /**
-     * Returns list of collection IDs.
-     * @return {Promise<string[]>} An array of collection IDs.
+     * Lists all face collection IDs in the current AWS account and region.
+     *
+     * @return {Promise<string[]>} An array of collection IDs. Empty array if no collections exist.
+     *
+     * @example
+     * ```typescript
+     * const collections = await client.listCollections();
+     * // => ['employees', 'visitors']
+     * ```
      */
     listCollections(): Promise<string[]>;
     /**
-     * Detects one face in the input image and adds it to the specified collection.
-     * Note that this method is used to index one face.
-     * Throws an exception if no face is found in the input image or multiple faces are found.
-     * @param {string} collectionId The ID of an existing collection to which you want to add the faces that are detected in the input images.
-     * @param {string} img Image path or Data Url or image buffer.
-     * @param {string|undefined} options.externalImageId The ID you want to assign to the faces detected in the image.
-     *                                                   When you call the "listFaces" operation, the response returns the external ID.
-     *                                                   You can use this external image ID to create a client-side index to associate the faces with each image.
-     *                                                   You can then use the index to find all faces in an image.
-     *                                                   The maximum length is 255, and the characters that can be used are "[a-zA-Z0-9_.\-:]+".
-     * @param {boolean} options.returnDetails If false, only the face ID of the created face is returned. If true, returns the face ID of the created face, plus age range, gender, and emotion.
-     * @throws {FaceMissingException} Throws an exception if no face is found in the image.
-     * @throws {MultipleFacesException} Throws an exception if more than one face is found in the image.
-     * @return {Promise<string|IndexFaceDetails>} If options.returnDetails is false, the face identifier is returned.
-     *                                            If options.returnDetails is true, returns the gender, age group, and emotion in addition to the face identifier.
+     * Detects exactly one face in the image and indexes it into the specified collection.
+     * Throws an exception if the image contains zero or more than one face.
+     *
+     * @param {string} collectionId The ID of the collection to add the face to.
+     * @param {string} img Image file path or Data URL.
+     * @param {object} [options] Optional settings.
+     * @param {string} [options.externalImageId] User-defined identifier to associate with the indexed face.
+     *   Retrievable via {@link listFaces}. Maximum length is 255 characters. Allowed characters: `[a-zA-Z0-9_.\-:]+`.
+     * @param {boolean} [options.returnDetails=false] When `true`, returns {@link IndexFaceDetails} with age, gender, and emotions.
+     *   When `false`, returns only the face ID string.
+     * @throws {FaceMissingException} Thrown when no face is detected in the image.
+     * @throws {MultipleFacesException} Thrown when multiple faces are detected in the image.
+     * @throws {FaceIndexException} Thrown when the indexing operation fails to return a face record.
+     * @return {Promise<string | IndexFaceDetails>} The face ID string, or detailed face information if `returnDetails` is `true`.
+     *
+     * @example
+     * ```typescript
+     * // Register an employee's face with their employee ID.
+     * const faceId = await client.indexFace('employees', 'uploads/employee.jpg', {
+     *   externalImageId: 'EMP-1042',
+     * });
+     *
+     * // Register and get age, gender, and emotion details.
+     * const details = await client.indexFace('employees', 'uploads/employee.jpg', {
+     *   returnDetails: true,
+     * });
+     * ```
      */
     indexFace(collectionId: string, img: string, options?: {
         externalImageId?: string;
         returnDetails?: boolean;
     }): Promise<string | IndexFaceDetails>;
     /**
-     * For a given input image, first detects the largest face in the image, and then searches the specified collection for matching faces.
-     * The operation compares the features of the input face with faces in the specified collection.
-     * @param {string} collectionId ID of the collection to search.
-     * @param {string} img Image path or Data Url or image buffer.
-     * @param {object} options option.
-     * @param {number} options.minConfidence Specifies the minimum confidence in the face match to return. The default value is 80%.
-     * @param {number} options.maxFaces Maximum number of faces to return. The operation returns the maximum number of faces with the highest confidence in the match. The default value is 5.
-     * @param {boolean} options.throwNotFoundFaceException If true, throws a FaceMissingException exception when a face is not found in the image; if false, returns null. Default is false.
-     * @param {boolean} options.throwTooManyFaceException If true, throws a MultipleFacesException exception when more than one face is found in the image. Default is false.
-     * @throws {FaceMissingException} Throws an exception if options.throwNotFoundFaceException is true and no face is found in the image
-     * @throws {MultipleFacesException} Throws an exception if options.throwTooManyFaceException is true and more than one face is found in the image
-     * @return {Promise<FaceMatch[]|FaceMatch|null>} If options.maxFaces is 1, the face information found is returned.
-     *                                               If options.maxFaces is 2 or more, the list of face information found is returned.
-     *                                               Returns null if no face is found.
+     * Searches a face collection for faces matching the largest face detected in the input image.
+     *
+     * @param {string} collectionId The ID of the collection to search.
+     * @param {string} img Image file path or Data URL.
+     * @param {object} [options] Optional search settings.
+     * @param {number} [options.minConfidence=80] Minimum confidence threshold (0-100) for a face match to be included in results.
+     * @param {number} [options.maxFaces=5] Maximum number of matching faces to return. When set to `1`, returns a single {@link FaceMatch} object instead of an array.
+     * @param {boolean} [options.throwNotFoundFaceException=false] When `true`, throws {@link FaceMissingException} if no face is detected. When `false`, returns `null`.
+     * @param {boolean} [options.throwTooManyFaceException=false] When `true`, throws {@link MultipleFacesException} if multiple faces are detected.
+     * @throws {FaceMissingException} Thrown when `throwNotFoundFaceException` is `true` and no face is detected.
+     * @throws {MultipleFacesException} Thrown when `throwTooManyFaceException` is `true` and multiple faces are detected.
+     * @return {Promise<FaceMatch[] | FaceMatch | null>} Matching faces, a single match (when `maxFaces` is `1`), or `null` if no match is found.
+     *
+     * @example
+     * ```typescript
+     * // Find matching employees for a visitor photo.
+     * const matches = await client.searchFaces('employees', 'uploads/visitor.jpg');
+     *
+     * // Get the single best match only.
+     * const bestMatch = await client.searchFaces('employees', 'uploads/visitor.jpg', {
+     *   maxFaces: 1,
+     *   minConfidence: 95,
+     * });
+     * ```
      */
     searchFaces(collectionId: string, img: string, options?: {
         minConfidence?: number;
@@ -86,26 +167,44 @@ export default class {
         throwTooManyFaceException?: boolean;
     }): Promise<FaceMatch[] | FaceMatch | null>;
     /**
-     * Returns metadata for faces in the specified collection.
-     * This metadata includes information such as the bounding box coordinates, and face ID.
-     * @param {string} collectionId ID of the collection from which to list the faces.
-     * @param {number} maxResults Maximum number of faces to return. The default value is 1000.
-     * @return {Promise<FaceMatch[]>} Returns all face metadata in the collection.
+     * Lists face metadata stored in the specified collection.
+     *
+     * @param {string} collectionId The ID of the collection to list faces from.
+     * @param {number} [maxResults=1000] Maximum number of face records to return.
+     * @return {Promise<FaceMatch[]>} An array of face metadata. Empty array if the collection has no faces.
+     *
+     * @example
+     * ```typescript
+     * const faces = await client.listFaces('employees');
+     * for (const face of faces)
+     *   console.log(face.faceId, face.externalImageId);
+     * ```
      */
     listFaces(collectionId: string, maxResults?: number): Promise<FaceMatch[]>;
     /**
-     * Deletes faces from a collection.
-     * You specify a collection ID and an array of face IDs to remove from the collection.
-     * @param {string} collectionId Collection from which to remove the specific faces.
+     * Deletes one or more faces from a collection.
+     *
+     * @param {string} collectionId The ID of the collection to remove faces from.
      * @param {string[]} faceIds An array of face IDs to delete.
-     * @return {Promise<boolean>} True on success.
+     * @return {Promise<boolean>} `true` on success.
+     *
+     * @example
+     * ```typescript
+     * await client.deleteFaces('employees', [faceId]);
+     * ```
      */
     deleteFaces(collectionId: string, faceIds: string[]): Promise<boolean>;
     /**
-     * Deletes the specified collection.
-     * Note that this operation removes all faces in the collection.
-     * @param {string} collectionId ID of the collection to delete.
-     * @return {Promise<boolean>} True on success.
+     * Deletes a face collection and all faces stored within it.
+     *
+     * @param {string} collectionId The ID of the collection to delete.
+     * @throws {RekognitionCollectionDeleteException} Thrown when the API returns a non-200 HTTP status code.
+     * @return {Promise<boolean>} `true` on success.
+     *
+     * @example
+     * ```typescript
+     * await client.deleteCollection('employees');
+     * ```
      */
     deleteCollection(collectionId: string): Promise<boolean>;
 }

@@ -1,35 +1,41 @@
 import BoundingBox from '~/interfaces/BoundingBox';
 
 /**
- * This is the metadata structure of the bounding box coordinates, reliability (the bounding box contains a face), face ID, etc. returned by the searchFaces(), listFaces() methods, etc.
+ * Face metadata returned by face search and listing operations.
+ * Contains the face identifier, bounding box, optional external image ID, and similarity score.
+ *
+ * @example
+ * ```typescript
+ * const match: FaceMatch = {
+ *   faceId: '12345678-1234-1234-1234-123456789012',
+ *   boundingBox: { width: 0.35, height: 0.45, left: 0.22, top: 0.10 },
+ *   externalImageId: 'user-001',
+ *   similarity: 99.5,
+ * };
+ * ```
  */
 export default interface FaceMatch {
   /**
-   * A unique identifier assigned to the face.
+   * Unique identifier assigned to the face by Amazon Rekognition.
    * @type {string}
    */
   faceId: string,
 
   /**
-   * Bounding box of the face.
-   * width  : Width of the bounding box as a ratio of the overall image width.
-   * height : Height of the bounding box as a ratio of the overall image height.
-   * left   : Left coordinate of the bounding box as a ratio of overall image width.
-   * top    : Top coordinate of the bounding box as a ratio of overall image height.
+   * Bounding box coordinates of the face in the image.
    * @type {BoundingBox}
    */
   boundingBox: BoundingBox,
 
   /**
-   * Identifier that you assign to all the faces in the input image.
+   * User-defined identifier associated with the face via the `externalImageId` parameter during indexing.
    * @type {string}
    */
   externalImageId?: string,
 
   /**
-   * Confidence in the match of this face with the input face.
-   * Valid Range: Minimum value of 0. Maximum value of 100.
+   * Confidence score (0-100) indicating how closely this face matches the input face.
    * @type {number}
-  */
+   */
   similarity?: number
 }

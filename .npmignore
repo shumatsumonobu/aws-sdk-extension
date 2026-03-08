@@ -1,6 +1,14 @@
+# Dependencies
 node_modules/
+
+# Source and config (published package uses dist/ only)
 src/
 rollup.config.js
 tsconfig.json
+
+# Test credentials
 __tests__/.env
 !__tests__/.env.sample
+
+# Claude Code
+.claude/

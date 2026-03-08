@@ -1,64 +1,68 @@
-# About the Test
+# Tests
 
-## Test Preparation
-1. Copy `__tests__/.env.sample` to create `__tests__/.env`.
+Integration tests for `aws-sdk-extension`. These tests call the actual AWS Rekognition and SES APIs, so valid credentials are required.
+
+## Setup
+
+1. Copy the sample environment file and fill in your credentials:
     ```sh
-    cp -a __tests__/.env.sample __tests__/.env
+    cp __tests__/.env.sample __tests__/.env
     ```
-1. Define the environment variables needed to run the tests in `__tests__/.env`.
-    |Name|Description|
-    |--|--|
-    |REKOGNITION_REGION|Amazon Rekognition Region.|
-    |REKOGNITION_ACCESS_KEY_ID|Amazon Rekognition access key ID.|
-    |REKOGNITION_SECRET_ACCESS_KEY|Amazon Rekognition Secret Access Key.|
-    |SES_API_VERSION|Amazon SES Version.|
-    |SES_REGION|Amazon SES Region.|
-    |SES_ACCESS_KEY_ID|Amazon SES access key ID.|
-    |SES_SECRET_ACCESS_KEY|Amazon SES secret access key.|
-    |SES_FROM|Amazon SES source email address.|
-    |SES_TO|Amazon SES destination email address.|
 
-## Directory structure
-```sh
+2. Edit `__tests__/.env` with your AWS credentials:
+
+    | Variable | Description |
+    |----------|-------------|
+    | `REKOGNITION_REGION` | AWS region for Rekognition (e.g. `ap-northeast-1`) |
+    | `REKOGNITION_ACCESS_KEY_ID` | IAM access key ID with Rekognition permissions |
+    | `REKOGNITION_SECRET_ACCESS_KEY` | IAM secret access key |
+    | `SES_API_VERSION` | SES API version (e.g. `2010-12-01`) |
+    | `SES_REGION` | AWS region for SES (e.g. `ap-northeast-1`) |
+    | `SES_ACCESS_KEY_ID` | IAM access key ID with SES permissions |
+    | `SES_SECRET_ACCESS_KEY` | IAM secret access key |
+    | `SES_FROM` | Verified sender email address |
+    | `SES_TO` | Recipient email address |
+
+3. Build the project before running tests:
+    ```sh
+    npm run build
+    ```
+
+4. Run the tests:
+    ```sh
+    npm test
+    ```
+
+## Directory Structure
+
+```
 __tests__/
-    |-- input                     Test data.
-    |-- support                   Utilities.
-    |-- .env.sample               Sample environment variables.
-    |-- RekognitionClient.test.js Amazon Rekognition Client test.
-    `-- SESClient.test.js         Amazon SES Client test.
+├── fixtures/                       Test images (single-face, multiple-faces, person-*, no-face)
+├── support/
+│   └── loadEnv.js                  Loads .env into process.env
+├── .env.sample                     Sample environment variables
+├── RekognitionClient.test.js       Rekognition client integration tests
+├── SESClient.test.js               SES client integration tests
+└── README.md                       This file
 ```
 
-## Evidence (2024/3/24)
-```sh
-$ npm test
+## Test Coverage
 
-> aws-sdk-extension@1.0.0 test
-> jest
+### RekognitionClient (25 tests)
 
- PASS  __tests__/RekognitionClient.test.js (5.906 s)
-  ✓ Should detect one person from the image (339 ms)
-  ✓ Should be able to get facial details (361 ms)
-  ✓ Should detect three persons from the image (422 ms)
-  ✓ The two faces should be the same person (115 ms)
-  ✓ The two faces should be different people (156 ms)
-  ✓ Should be able to create collections (73 ms)
-  ✓ Should index faces in the collection (329 ms)
-  ✓ Should return the details of the indexed face (271 ms)
-  ✓ Should be able to find faces from the collection (238 ms)
-  ✓ Should be able to find faces from the collection (215 ms)
-  ✓ Should return null if collection is searched using faceless images (50 ms)
-  ✓ If the throwNotFoundFaceException option is enabled and the collection is searched for images without faces, an FaceMissingException exception should be thrown (700 ms)
-  ✓ If the throwTooManyFaceException option is enabled and an image with multiple faces is searched for in the collection, an MultipleFacesException exception should be thrown (417 ms)
-  ✓ Should list indexed faces (22 ms)
-  ✓ Should delete the face from the collection (36 ms)
-  ✓ Collection should be deleted (78 ms)
+| Method | Cases |
+|--------|-------|
+| `detectFaces()` | Single face, multiple faces, no face, with details, Data URL input, invalid input |
+| `compareFaces()` | Same person (high similarity), different people (low similarity) |
+| `createCollection()` / `deleteCollection()` | Create, verify in list, delete, verify removed |
+| `indexFace()` | Face ID return, detailed return, externalImageId, no-face error, multi-face error |
+| `searchFaces()` | Array result, single result, externalImageId, null on no-face, exception options |
+| `listFaces()` | List metadata, maxResults |
+| `deleteFaces()` | Remove face, verify removal |
 
- PASS  __tests__/SESClient.test.js
-  ✓ Should send email to a valid address (425 ms)
+### SESClient (12 tests)
 
-Test Suites: 2 passed, 2 total
-Tests:       17 passed, 17 total
-Snapshots:   0 total
-Time:        6.83 s
-Ran all test suites.
-```
+| Method | Cases |
+|--------|-------|
+| `send()` | Plain text, HTML, Handlebars template, CC, array recipients, missing fields error, field reset |
+| Fluent API | `from()`, `to()`, `cc()`, `subject()`, `body()` return `this` |

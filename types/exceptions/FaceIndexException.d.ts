@@ -1,20 +1,21 @@
 /**
- * Face indexing failed.
+ * Exception thrown when face indexing into a Rekognition collection fails.
+ * Raised by {@link RekognitionClient.indexFace} when no face record is returned after indexing.
  */
-export default class extends Error {
+export default class FaceIndexException extends Error {
     /**
-     * Error Name.
+     * Error name, always `'FaceIndexException'`.
      * @type {string}
      */
     name: string;
     /**
-     * Collection ID.
+     * The ID of the collection where indexing was attempted.
      * @type {string}
      */
     collectionId: string;
     /**
-     * @param {string} collectionId Collection ID.
-     * @param {number} httpStatusCode HTTP status code.
+     * Creates a new FaceIndexException.
+     * @param {string} collectionId The ID of the collection where indexing failed.
      */
     constructor(collectionId: string);
 }

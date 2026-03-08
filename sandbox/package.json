@@ -1,0 +1,8 @@
+{
+  "name": "aws-sdk-extension-sandbox",
+  "private": true,
+  "dependencies": {
+    "aws-sdk-extension": "file:..",
+    "dotenv": "^17.3.1"
+  }
+}

@@ -2,18 +2,30 @@ import BoundingBox from '~/interfaces/BoundingBox';
 import FaceDetailsEmotions from '~/interfaces/FaceDetailsEmotions';
 
 /**
- * Details of each face found in the image. 
+ * Detailed information about a face detected in an image.
+ * Returned by {@link RekognitionClient.detectFaces} when `withDetails` is `true`.
+ *
+ * @example
+ * ```typescript
+ * const details: FaceDetails = {
+ *   boundingBox: { width: 0.35, height: 0.45, left: 0.22, top: 0.10 },
+ *   ageRange: { low: 25, high: 35 },
+ *   gender: 'male',
+ *   emotions: { happy: 95.2, calm: 3.1, surprised: 0.8, angry: 0.3, sad: 0.2, confused: 0.2, disgusted: 0.1 },
+ * };
+ * ```
  */
 export default interface FaceDetails {
   /**
-   * Bounding box of the face.
+   * Bounding box coordinates of the detected face.
    * @type {BoundingBox}
    */
   boundingBox: BoundingBox,
 
   /**
-   * The estimated age range, in years, for the face. Low represents the lowest estimated age and High represents the highest estimated age.
-   * @type {{high: number, low: number}}
+   * Estimated age range (in years) for the detected face.
+   * `low` is the lowest estimated age, `high` is the highest.
+   * @type {{ high: number, low: number }}
    */
   ageRange?: {
     high: number,
@@ -21,13 +33,13 @@ export default interface FaceDetails {
   },
 
   /**
-   * The predicted gender of a detected face. 
-   * @type {'male'|'female'}
+   * Predicted gender of the detected face.
+   * @type {'male' | 'female'}
    */
   gender?: 'male'|'female',
 
   /**
-   * The emotions that appear to be expressed on the face, and the confidence level in the determination. 
+   * Emotion confidence scores for the detected face.
    * @type {FaceDetailsEmotions}
    */
   emotions?: FaceDetailsEmotions

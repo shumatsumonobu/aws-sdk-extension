@@ -1,25 +1,27 @@
 /**
- * Face collection creation failed.
+ * Exception thrown when creating a Rekognition face collection fails.
+ * Raised by {@link RekognitionClient.createCollection} when the API returns a non-200 status code.
  */
-export default class extends Error {
+export default class RekognitionCollectionCreateException extends Error {
     /**
-     * Error Name.
+     * Error name, always `'RekognitionCollectionCreateException'`.
      * @type {string}
      */
     name: string;
     /**
-     * Collection ID.
+     * The ID of the collection that failed to be created.
      * @type {string}
      */
     collectionId: string;
     /**
-     * HTTP status code.
+     * HTTP status code returned by the Rekognition API.
      * @type {number}
      */
     httpStatusCode: number;
     /**
-     * @param {string} collectionId Collection ID.
-     * @param {number} httpStatusCode HTTP status code.
+     * Creates a new RekognitionCollectionCreateException.
+     * @param {string} collectionId The ID of the collection that failed to be created.
+     * @param {number} httpStatusCode HTTP status code returned by the API.
      */
     constructor(collectionId: string, httpStatusCode: number);
 }

@@ -1,18 +1,30 @@
 import FaceDetailsEmotions from '~/interfaces/FaceDetailsEmotions';
 
 /**
- * Detail of indexed face.
+ * Detailed information about a face that has been indexed into a Rekognition collection.
+ * Returned by {@link RekognitionClient.indexFace} when `returnDetails` is `true`.
+ *
+ * @example
+ * ```typescript
+ * const indexedFace: IndexFaceDetails = {
+ *   faceId: '12345678-1234-1234-1234-123456789012',
+ *   ageRange: { low: 25, high: 35 },
+ *   gender: 'female',
+ *   emotions: { happy: 90.5, calm: 5.2, surprised: 1.0, angry: 0.5, sad: 1.0, confused: 0.8, disgusted: 1.0 },
+ * };
+ * ```
  */
 export default interface IndexFaceDetails {
   /**
-   * A unique identifier assigned to the face.
+   * Unique identifier assigned to the indexed face by Amazon Rekognition.
    * @type {string}
    */
   faceId: string,
 
   /**
-   * The estimated age range, in years, for the face. Low represents the lowest estimated age and High represents the highest estimated age.
-   * @type {{high: number, low: number}}
+   * Estimated age range (in years) for the indexed face.
+   * `low` is the lowest estimated age, `high` is the highest.
+   * @type {{ high: number, low: number }}
    */
   ageRange: {
     high: number,
@@ -20,13 +32,13 @@ export default interface IndexFaceDetails {
   },
 
   /**
-   * The predicted gender of a detected face. 
-   * @type {'male'|'female'}
+   * Predicted gender of the indexed face.
+   * @type {'male' | 'female'}
    */
   gender: 'male'|'female',
 
   /**
-   * The emotions that appear to be expressed on the face, and the confidence level in the determination. 
+   * Emotion confidence scores for the indexed face.
    * @type {FaceDetailsEmotions}
    */
   emotions: FaceDetailsEmotions

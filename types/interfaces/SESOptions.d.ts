@@ -1,26 +1,36 @@
 /**
- * AWS SES Client Optional Interface.
+ * Configuration options for initializing a {@link SESClient}.
+ *
+ * @example
+ * ```typescript
+ * const options: SESOptions = {
+ *   apiVersion: '2010-12-01',
+ *   region: 'ap-northeast-1',
+ *   accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
+ *   secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+ * };
+ * ```
  */
 export default interface SESOptions {
     /**
-     * API version in YYYYY-MM-DD format (or date).
-     * Specify 'latest' to use the latest possible version.
-     * The default is 'latest'.
+     * SES API version in `YYYY-MM-DD` format.
+     * Specify `'latest'` to use the most recent API version.
      * @type {string}
+     * @default 'latest'
      */
     apiVersion: string;
     /**
-     * The region to send service requests to.
+     * AWS region to send service requests to (e.g. `'ap-northeast-1'`, `'us-east-1'`).
      * @type {string}
      */
     region: string;
     /**
-     * Your AWS access key ID.
+     * AWS access key ID for authentication.
      * @type {string}
      */
     accessKeyId: string;
     /**
-     * Your AWS secret access key.
+     * AWS secret access key for authentication.
      * @type {string}
      */
     secretAccessKey: string;

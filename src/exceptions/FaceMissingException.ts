@@ -1,15 +1,19 @@
 /**
- * Missing face in photo.
+ * Exception thrown when no face is detected in the provided image.
+ * Raised by {@link RekognitionClient.indexFace} and optionally by {@link RekognitionClient.searchFaces}.
  */
-export default class extends Error {
+export default class FaceMissingException extends Error {
   /**
-   * Error Name.
+   * Error name, always `'FaceMissingException'`.
    * @type {string}
    */
   name: string;
 
+  /**
+   * Creates a new FaceMissingException.
+   */
   constructor() {
-    super('Missing face in photo');
+    super('No face detected in the provided image');
     this.name = 'FaceMissingException';
   }
 }

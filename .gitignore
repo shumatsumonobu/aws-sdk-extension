@@ -1,5 +1,17 @@
+# Dependencies
 node_modules/
-docs/node_modules/
+
+# Test credentials
 __tests__/.env
 !__tests__/.env.sample
+
+# IDE
 .vscode/
+
+# Sandbox
+sandbox/.env
+!sandbox/.env.sample
+sandbox/node_modules/
+
+# Claude Code
+.claude/

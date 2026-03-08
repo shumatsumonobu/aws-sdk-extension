@@ -1,3 +1,7 @@
+/**
+ * AWS SDK Extension - provides simplified interfaces for Amazon Rekognition and SES.
+ * @module aws-sdk-extension
+ */
 export { default as RekognitionClient } from '~/RekognitionClient';
 export { default as SESClient } from '~/SESClient';
 export { default as RekognitionCollectionCreateException } from '~/exceptions/RekognitionCollectionCreateException';
